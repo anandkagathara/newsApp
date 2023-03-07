@@ -1,9 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/userController");
+const {
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+} = require("../controllers/userController");
 
+router.get("/", getUsers);
+router.get("/:id", getUserById);
+router.put("/:id", updateUser);
+router.delete("/:id", deleteUser);
 
-module.exports = (socket) => {
-  socket.on("signup", userController.signup);
-  socket.on("login", userController.login);
-};
+module.exports = router;

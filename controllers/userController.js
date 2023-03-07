@@ -1,35 +1,61 @@
 const User = require("../models/userModel");
 
-module.exports.signup = (socket, data) => {
-  const { email, password } = data;
-  const user = new User({ email, password });
-  user.save((err, newUser) => {
-    if (err) {
-      socket.emit("signup_error", { message: err.message });
-    } else {
-      socket.emit("signup_success", { user: newUser });
-    }
-  });
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json({ users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 };
 
-module.exports.login = (socket, data) => {
-  const { email, password } = data;
-  User.findOne({ email }, (err, user) => {
-    if (err) {
-      socket.emit("login_error", { message: err.message });
-    } else if (!user) {
-      socket.emit("login_error", { message: "Invalid email or password" });
-    } else {
-      user.comparePassword(password, (err, isMatch) => {
-        if (err) {
-          socket.emit("login_error", { message: err.message });
-        } else if (!isMatch) {
-          socket.emit("login_error", { message: "Invalid email or password" });
-        } else {
-          const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET);
-          socket.emit("login_success", { token });
-        }
-      });
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
-  });
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.body;
+    const user = await User.findByIdAndUpdate(id, { email }, { new: true });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(204).end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+module.exports = {
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
 };
