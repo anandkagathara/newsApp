@@ -1,15 +1,10 @@
 const jwt = require("jsonwebtoken");
 const {
-  createComment,
-  updateComment,
-  deleteComment,
-} = require("../controllers/commentController");
-const {
   addNews,
   getNews,
   updateNews,
 } = require("../controllers/newsController");
-const { signup, login } = require("../controllers/authController");
+
 
 const socketAuth = (socket, next) => {
   if (socket.handshake.auth && socket.handshake.auth.token) {
